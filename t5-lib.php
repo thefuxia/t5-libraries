@@ -9,25 +9,22 @@
 
 namespace T5;
 
+use T5\Core\Autoload\Autoload;
+use T5\Core\Autoload\Namespace_Base_Autoload_Rule;
+
 foreach ( [ 'Autoload', 'Autoload_Rule', 'Namespace_Base_Autoload_Rule'] as $file )
 {
 	$fqn = 'T5\Core\Autoload\\' . $file;
-	if ( ! class_exists( $fqn ) && ! interface_exists( ! class_exists( $fqn ) ) )
+	if ( ! class_exists( $fqn ) && ! interface_exists( ! $fqn ) )
 		require_once __DIR__ . "/Core/Autoload/$file.php";
 }
 
-$autoloader = new Core\Autoload\Autoload;
+$autoloader = new Autoload;
 $autoloader->add_rule(
-	new Core\Autoload\Namespace_Base_Autoload_Rule( __DIR__, __NAMESPACE__ )
-);
-$autoloader->add_rule(
-	new Core\Autoload\Namespace_Base_Autoload_Rule( __DIR__ . '/Examples', __NAMESPACE__ )
+	new Namespace_Base_Autoload_Rule( __DIR__, __NAMESPACE__ )
 );
 
-$examples = glob( __DIR__ . '/Examples/example.*.php' );
 
-foreach ( $examples as $example )
-	include $example;
 
 add_action( 'plugins_loaded', function() use ( $autoloader ) {
 	do_action( 't5_lib_loaded', $autoloader );
