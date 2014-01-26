@@ -24,8 +24,12 @@ $autoloader->add_rule(
 	new Namespace_Base_Autoload_Rule( __DIR__, __NAMESPACE__ )
 );
 
-
-
+// For plugins
 add_action( 'plugins_loaded', function() use ( $autoloader ) {
 	do_action( 't5_lib_loaded', $autoloader );
+}, 0 );
+
+// For themes
+add_action( 'wp_loaded', function() use ( $autoloader ) {
+	do_action( 't5_lib_and_wp_loaded', $autoloader );
 }, 0 );
