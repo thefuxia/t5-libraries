@@ -4,12 +4,13 @@ namespace T5\Core\States;
 
 /**
  * Predictable access to plugin properties.
+ * Traversable and therefore usable in simple foreach loops.
  *
  * @author  toscho
  * @version 2014.01.24
  * @license MIT
  */
-class Plugin_Data implements Freezable
+class Plugin_Data implements Freezable, \IteratorAggregate
 {
 	/**
 	 * @var bool
@@ -17,19 +18,17 @@ class Plugin_Data implements Freezable
 	private $frozen = FALSE;
 
 	/**
-	 * @var array
+	 * @var string
 	 */
-	private $data = array (
-		'file_path'        => '',
-		'dir_path'         => '',
-		'base_name'        => '',
-		'dir_url'          => '',
-		'text_domain_path' => '',
-		'text_domain'      => '',
-		'plugin_uri'       => '',
-		'name'             => '',
-		'version'          => '',
-	);
+	private $file_path;
+	private $dir_path;
+	private $base_name;
+	private $dir_url;
+	private $text_domain_path;
+	private $text_domain;
+	private $plugin_uri;
+	private $name;
+	private $version;
 
 	/**
 	 * Constructor.
@@ -52,11 +51,12 @@ class Plugin_Data implements Freezable
 	{
 		if ( $this->frozen )
 		{
+			# @TODO Rethink: Maybe throw a \RuntimeException?
 			trigger_error( 'You cannot change a frozen object.', E_USER_ERROR );
 			return FALSE;
 		}
 
-		$this->data[ $name ] = $value;
+		$this->{$name} = $value;
 		return TRUE;
 	}
 
@@ -66,97 +66,7 @@ class Plugin_Data implements Freezable
 	 */
 	public function get( $name )
 	{
-		return $this->data[ $name ];
-	}
-
-	/**
-	 * Path to main plugin file.
-	 *
-	 * @return string
-	 */
-	public function get_file_path()
-	{
-		return $this->get( 'file_path' );
-	}
-
-	/**
-	 * Path to main plugin directory.
-	 *
-	 * @return string
-	 */
-	public function get_dir_path()
-	{
-		return $this->get( 'dir_path' );
-	}
-
-	/**
-	 * Plugin basename.
-	 *
-	 * @return string
-	 */
-	public function get_base_name()
-	{
-		return $this->get( 'base_name' );
-	}
-
-	/**
-	 * URL to plugin directory.
-	 *
-	 * @return string
-	 */
-	public function get_dir_url()
-	{
-		return $this->get( 'dir_url' );
-	}
-
-	/**
-	 * Path to directory with translation files.
-	 *
-	 * @return string
-	 */
-	public function get_text_domain_path()
-	{
-		return $this->get( 'text_domain_path' );
-	}
-
-	/**
-	 * Textdomain of the plugin.
-	 *
-	 * @return string
-	 */
-	public function get_text_domain()
-	{
-		return $this->get( 'text_domain' );
-	}
-
-	/**
-	 * Plugin web address.
-	 *
-	 * @return string
-	 */
-	public function get_plugin_uri()
-	{
-		return $this->get( 'plugin_uri' );
-	}
-
-	/**
-	 * Plugin name.
-	 *
-	 * @return string
-	 */
-	public function get_name()
-	{
-		return $this->get( 'name' );
-	}
-
-	/**
-	 * Plugin version.
-	 *
-	 * @return string
-	 */
-	public function get_version()
-	{
-		return $this->get( 'version' );
+		return $this->{$name};
 	}
 
 	/**
@@ -187,9 +97,9 @@ class Plugin_Data implements Freezable
 	 */
 	private function fill_default_properties( $file )
 	{
-		$this->data['file_path'] = $file;
-		$this->data['base_name'] = plugin_basename( $file );
-		$this->data['dir_url']   = plugins_url( '/', __FILE__ );
+		$this->file_path = $file;
+		$this->base_name = plugin_basename( $file );
+		$this->dir_url   = plugins_url( '/', __FILE__ );
 
 		$headers = get_file_data(
 			$file,
@@ -202,6 +112,26 @@ class Plugin_Data implements Freezable
 		);
 
 		foreach ( $headers as $name => $value )
-			$this->data[ $name ] = $value;
+			$this->{$name} = $value;
+	}
+
+	/**
+	 * Access to all traversable private properties/plugin file headers.
+	 * Maintain access to headers in here.
+	 * @return \Traversable
+	 */
+	public function getIterator()
+	{
+		return new \ArrayIterator( array(
+			'file_path'        => $this->file_path,
+			'dir_path'         => $this->dir_path,
+			'base_name'        => $this->base_name,
+			'dir_url'          => $this->dir_url,
+			'text_domain_path' => $this->text_domain_path,
+			'text_domain'      => $this->text_domain,
+			'plugin_uri'       => $this->plugin_uri,
+			'name'             => $this->name,
+			'version'          => $this->version,
+		) );
 	}
 }
