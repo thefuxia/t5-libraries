@@ -1,0 +1,12 @@
+{
+	"name":              "toscho/t5-libraries",
+	"description":       "Library of WordPress development classes.",
+	"minimum-stability": "stable",
+	"license":           "MIT",
+	"authors":           [
+		{
+			"name":  "Thomas Scholz",
+			"email": "info@toscho.de"
+		}
+	]
+}
